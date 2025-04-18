@@ -1,7 +1,7 @@
 import { calculateHash } from './utils';
 
 export class Block {
-  public hash: string // SHA-256 hash of the current block
+  public hash: string; // SHA-256 hash of the current block
 
   constructor(
     public index: number, // position in the chain

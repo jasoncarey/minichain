@@ -19,19 +19,19 @@ export class Blockchain {
   }
 
   public getLatestBlock(): Block {
-    return this.chain[this.chain.length - 1]
+    return this.chain[this.chain.length - 1];
   }
 
   public addBlock(newBlock: Block): void {
-    newBlock.previousHash = this.getLatestBlock().hash
-    newBlock.mine(2)
-    this.chain.push(newBlock)
+    newBlock.previousHash = this.getLatestBlock().hash;
+    newBlock.mine(2);
+    this.chain.push(newBlock);
   }
 
   public isValidChain(): Boolean {
-    for (let i=1; i < this.chain.length; i++) {
+    for (let i = 1; i < this.chain.length; i++) {
       const currentBlock = this.chain[i];
-      const previousBlock = this.chain[i-1];
+      const previousBlock = this.chain[i - 1];
 
       if (currentBlock.previousHash !== previousBlock.hash) {
         return false;
@@ -39,7 +39,7 @@ export class Blockchain {
 
       const recomputedHash = currentBlock.calculateHash();
       if (currentBlock.hash !== recomputedHash) {
-        return false
+        return false;
       }
     }
     return true;
