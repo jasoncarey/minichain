@@ -27,18 +27,18 @@ A minimal, educational cryptocurrency and blockchain built from scratch in TypeS
 ---
 
 ## 📁 Project Structure
-src/
-├── block.ts         # Block structure + hashing + mining
-├── blockchain.ts    # Chain management + validation
-├── transaction.ts   # Transaction model + signing/verification
-├── wallet.ts        # Keypair generation, signing, address
-├── mempool.ts       # Pending transaction queue
-├── state.ts         # Account balances and nonce tracking
-├── miner.ts         # Block creation with transaction application
-└── utils.ts         # SHA-256 hash helper
-tests/
-└── miner.test.ts    # End-to-end validation using Vitest
-└── state.test.ts    # End-to-end validation using Vitest
+
+- `src/block.ts` – Block structure, hashing, mining
+- `src/blockchain.ts` – Chain management, validation
+- `src/transaction.ts` – Transaction model, signing, verification
+- `src/wallet.ts` – Keypair generation, signing, address
+- `src/mempool.ts` – Pending transaction queue
+- `src/state.ts` – Account balances and nonce tracking
+- `src/miner.ts` – Block creation with transaction application
+- `src/utils.ts` – SHA-256 hashing utility
+
+- `tests/miner.test.ts` – End-to-end validation using Vitest
+- `tests/state.test.ts` – Nonce + balance validation using Vitest
 
 ---
 
