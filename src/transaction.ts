@@ -12,7 +12,7 @@ export class Transaction {
   public to: string; // receiver's address
   public amount: number; // coins to transfer
   public nonce: number; // prevents replay attacks
-  private signature: string; // signature from sender (hex)
+  private signature!: string; // signature from sender (hex)
 
   constructor(from: string, to: string, amount: number, nonce: number) {
     this.from = from;

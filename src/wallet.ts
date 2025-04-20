@@ -20,6 +20,9 @@ export class Wallet {
     return this.keypair.getPublic('hex');
   }
   public sign(data: string): string {
+    if (!data || typeof data !== 'string') {
+      throw new Error('Cannot sign empty or invalid data');
+    }
     const dataHash = calculateHash(data);
     return this.keypair.sign(dataHash, 'hex').toDER('hex');
   }
