@@ -19,6 +19,11 @@ export class Wallet {
   public getAddress(): string {
     return this.keypair.getPublic('hex');
   }
+
+  public getPrivateKey(): string {
+    return this.keypair.getPrivate('hex');
+  }
+
   public sign(data: string): string {
     if (!data || typeof data !== 'string') {
       throw new Error('Cannot sign empty or invalid data');
@@ -30,5 +35,15 @@ export class Wallet {
     const key = ec.keyFromPublic(publicKey, 'hex');
     const dataHash = calculateHash(data);
     return key.verify(dataHash, signature);
+  }
+
+  /**
+   * Returns the wallet associated with a private key
+   */
+  public static fromPrivateKey(priv: string): Wallet {
+    const keypair = ec.keyFromPrivate(priv, 'hex');
+    const wallet = new Wallet();
+    wallet.keypair = keypair;
+    return wallet;
   }
 }
