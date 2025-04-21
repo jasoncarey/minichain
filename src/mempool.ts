@@ -1,7 +1,7 @@
 import { Transaction } from './transaction';
 
 export class Mempool {
-  private pool: Transaction[] = [];
+  public pool: Transaction[] = [];
 
   public add(tx: Transaction): void {
     this.pool.push(tx);

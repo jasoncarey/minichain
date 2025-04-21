@@ -8,7 +8,7 @@ import { Block } from './block';
  * - Creating the genesis block
  */
 export class Blockchain {
-  private chain: Block[];
+  public chain: Block[];
 
   constructor() {
     this.chain = [this.createGenesisBlock()];

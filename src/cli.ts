@@ -5,11 +5,19 @@ import { Transaction } from './transaction';
 import { Mempool } from './mempool';
 import { Miner } from './miner';
 import { Blockchain } from './blockchain';
+import {
+  loadBlockchain,
+  loadMempool,
+  loadState,
+  saveBlockchain,
+  saveMempool,
+  saveState,
+} from './storage';
 
 const program = new Command();
-const blockchain = new Blockchain();
-const state = new State();
-const mempool = new Mempool();
+const blockchain = loadBlockchain();
+const state = loadState();
+const mempool = loadMempool();
 const minerInstance = new Miner(blockchain, mempool, state, '');
 
 program.name('minichain').description('A minimal blockchain CLI').version('0.1.0');
@@ -50,6 +58,7 @@ program
     tx.sign(wallet);
 
     mempool.add(tx);
+    saveMempool(mempool);
     console.log('✅ Transaction added to mempool.');
   });
 
@@ -62,6 +71,8 @@ program
     minerInstance.rewardAddress = miner;
 
     const block = minerInstance.mineBlock();
+    saveBlockchain(blockchain);
+    saveState(state);
     console.log('⛏️  Block mined!');
     console.log(`Index: ${block.index}`);
     console.log(`Hash: ${block.hash}`);

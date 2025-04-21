@@ -38,6 +38,18 @@ export class State {
     return true;
   }
 
+  public dumpBalances(): Record<string, number> {
+    return Object.fromEntries(this.balances);
+  }
+
+  public dumpNonces(): Record<string, number> {
+    return Object.fromEntries(this.nonces);
+  }
+
+  public setNonce(address: string, nonce: number): void {
+    this.nonces.set(address, nonce);
+  }
+
   private incrementNonce(address: string): void {
     const current = this.getNonce(address);
     this.nonces.set(address, current + 1);

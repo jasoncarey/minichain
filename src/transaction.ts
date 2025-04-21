@@ -38,6 +38,10 @@ export class Transaction {
     return calculateHash(data);
   }
 
+  public setSignature(signature: string): void {
+    this.signature = signature;
+  }
+
   public static verify(transaction: Transaction): boolean {
     if (transaction.amount <= 0 || transaction.nonce < 0) {
       return false;
