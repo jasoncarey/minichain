@@ -9,8 +9,9 @@ export class Block {
     public transactions: any[], // list of transactions
     public previousHash: string, // hash of the previous block
     public nonce: number = 0, // number used to mine the block
+    hashOverride?: string, // allow overriding for use in db
   ) {
-    this.hash = this.calculateHash();
+    this.hash = hashOverride ?? this.calculateHash();
   }
 
   public calculateHash(): string {
