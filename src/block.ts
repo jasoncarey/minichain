@@ -1,15 +1,24 @@
 import { calculateHash } from './utils';
 
+/**
+ * index: position in the chain
+ * timestamp: time of creation
+ * transactions: list of transactions
+ * previousHash: hash of the previous block
+ * nonce: number used to mine the block
+ * hash: the hash of the block
+ * hashOverride: allow overriding for use in db
+ */
 export class Block {
-  public hash: string; // SHA-256 hash of the current block
+  public hash: string;
 
   constructor(
-    public index: number, // position in the chain
-    public timestamp: number, // time of creation
-    public transactions: any[], // list of transactions
-    public previousHash: string, // hash of the previous block
-    public nonce: number = 0, // number used to mine the block
-    hashOverride?: string, // allow overriding for use in db
+    public index: number,
+    public timestamp: number,
+    public transactions: any[],
+    public previousHash: string,
+    public nonce: number = 0,
+    hashOverride?: string,
   ) {
     this.hash = hashOverride ?? this.calculateHash();
   }

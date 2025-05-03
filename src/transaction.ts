@@ -6,13 +6,19 @@ import { Wallet } from './wallet';
  *   - store relevant fields
  *   - provide method to sign the transaction using a Wallet
  *   - provide method to verify a signature
+ *
+ * from: sender's address (public key in hex)
+ * to: receiver's address
+ * amount: coins to transfer
+ * nonce: prevents replay attacks
+ * signature: signature from sender (hex)
  */
 export class Transaction {
-  public from: string; // sender's address (public key in hex)
-  public to: string; // receiver's address
-  public amount: number; // coins to transfer
-  public nonce: number; // prevents replay attacks
-  private signature!: string; // signature from sender (hex)
+  public from: string;
+  public to: string;
+  public amount: number;
+  public nonce: number;
+  private signature!: string;
 
   constructor(from: string, to: string, amount: number, nonce: number) {
     this.from = from;

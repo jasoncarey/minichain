@@ -1,10 +1,7 @@
 import { Command } from 'commander';
 import { Wallet } from './wallet';
-import { State } from './state';
 import { Transaction } from './transaction';
-import { Mempool } from './mempool';
 import { Miner } from './miner';
-import { Blockchain } from './blockchain';
 import {
   loadBlockchain,
   loadMempool,
