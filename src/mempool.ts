@@ -1,17 +1,28 @@
+import { mempool } from './db/schema';
+import { db } from './db/sqlite-client';
 import { Transaction } from './transaction';
 
 export class Mempool {
-  public pool: Transaction[] = [];
-
-  public add(tx: Transaction): void {
-    this.pool.push(tx);
+  async add(tx: Transaction): Promise<void> {
+    await db.insert(mempool).values({
+      from: tx.from,
+      to: tx.to,
+      amount: tx.amount,
+      nonce: tx.nonce,
+      signature: tx.getSignature(),
+    });
   }
 
-  public getTransactions(): Transaction[] {
-    return [...this.pool]; // copy to avoid mutation
+  async getTransactions(): Promise<Transaction[]> {
+    const txRows = await db.select().from(mempool);
+    return txRows.map((tx) => {
+      const t = new Transaction(tx.from, tx.to, tx.amount, tx.nonce);
+      t.setSignature(tx.signature);
+      return t;
+    });
   }
 
-  public clear(): void {
-    this.pool = [];
+  async clear(): Promise<void> {
+    await db.delete(mempool);
   }
 }

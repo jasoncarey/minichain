@@ -1,57 +1,65 @@
+import { eq } from 'drizzle-orm';
+import { db } from './db/sqlite-client';
 import { Transaction } from './transaction';
+import { state } from './db/schema';
 
 export class State {
-  private balances: Map<string, number>;
-  private nonces: Map<string, number>;
+  async getNonce(address: string): Promise<number> {
+    const row = await db.query.state.findFirst({
+      where: eq(state.address, address),
+    });
 
-  constructor() {
-    this.balances = new Map();
-    this.nonces = new Map();
+    return row ? row.balance : 0;
   }
 
-  public getNonce(address: string): number {
-    const nonce = this.nonces.get(address);
-    return nonce ?? 0;
+  async getBalance(address: string): Promise<number> {
+    const row = await db.query.state.findFirst({
+      where: eq(state.address, address),
+    });
+
+    return row ? row.balance : 0;
   }
 
-  public getBalance(address: string): number {
-    const balance = this.balances.get(address);
-    if (balance) {
-      return balance;
+  async credit(address: string, amount: number): Promise<void> {
+    const current = await this.getBalance(address);
+    const exists = await db.query.state.findFirst({
+      where: eq(state.address, address),
+    });
+
+    if (exists) {
+      await db
+        .update(state)
+        .set({ balance: current + amount })
+        .where(eq(state.address, address));
+    } else {
+      await db.insert(state).values({
+        address,
+        balance: amount,
+        nonce: 0,
+      });
     }
-    return 0;
   }
 
-  public credit(address: string, amount: number) {
-    const balance = this.getBalance(address);
-    this.balances.set(address, balance + amount);
+  async incrementNonce(address: string): Promise<void> {
+    const current = await this.getNonce(address);
+    await db
+      .update(state)
+      .set({ nonce: current + 1 })
+      .where(eq(state.address, address));
   }
 
-  public applyTransaction(tx: Transaction): boolean {
+  async applyTransaction(tx: Transaction): Promise<boolean> {
     if (!Transaction.verify(tx)) return false;
-    if (tx.nonce !== this.getNonce(tx.from)) return false;
-    if (this.getBalance(tx.from) < tx.amount) return false;
 
-    this.credit(tx.from, -tx.amount);
-    this.credit(tx.to, tx.amount);
+    const nonce = await this.getNonce(tx.from);
+    if (tx.nonce !== nonce) return false;
+
+    const balance = await this.getBalance(tx.from);
+    if (balance < tx.amount) return false;
+
+    await this.credit(tx.from, -tx.amount);
+    await this.credit(tx.to, tx.amount);
     this.incrementNonce(tx.from);
     return true;
-  }
-
-  public dumpBalances(): Record<string, number> {
-    return Object.fromEntries(this.balances);
-  }
-
-  public dumpNonces(): Record<string, number> {
-    return Object.fromEntries(this.nonces);
-  }
-
-  public setNonce(address: string, nonce: number): void {
-    this.nonces.set(address, nonce);
-  }
-
-  private incrementNonce(address: string): void {
-    const current = this.getNonce(address);
-    this.nonces.set(address, current + 1);
   }
 }

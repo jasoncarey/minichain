@@ -1,4 +1,8 @@
+import { db } from './db/sqlite-client';
+import { blocks, transactions } from './db/schema';
 import { Block } from './block';
+import { eq } from 'drizzle-orm';
+import { Transaction } from './transaction';
 
 /**
  * Responsible for:
@@ -8,39 +12,57 @@ import { Block } from './block';
  * - Creating the genesis block
  */
 export class Blockchain {
-  public chain: Block[];
-
   constructor() {
-    this.chain = [this.createGenesisBlock()];
+    this.ensureGenesisBlock();
   }
 
-  private createGenesisBlock(): Block {
-    return new Block(0, Date.now(), [], '');
+  private async ensureGenesisBlock() {
+    const existing = await db.select({ count: blocks.id }).from(blocks);
+    if (existing.length === 0) {
+      this.addBlock(new Block(0, Date.now(), [], ''));
+    }
   }
 
-  public getLatestBlock(): Block {
-    return this.chain[this.chain.length - 1];
+  async addBlock(block: Block) {
+    await db.insert(blocks).values({
+      index: block.index,
+      timestamp: block.timestamp,
+      previousHash: block.previousHash,
+      hash: block.hash,
+      nonce: block.nonce,
+    });
   }
 
-  public addBlock(newBlock: Block): void {
-    newBlock.previousHash = this.getLatestBlock().hash;
-    newBlock.mine(2);
-    this.chain.push(newBlock);
+  async getChain(): Promise<Block[]> {
+    const blockRows = await db.select().from(blocks).orderBy(blocks.index);
+
+    const blocksWithTxs: Block[] = [];
+
+    for (const blk of blockRows) {
+      const txRows = await db.select().from(transactions).where(eq(transactions.blockId, blk.id));
+
+      const txs = txRows.map((tx) => {
+        const t = new Transaction(tx.from, tx.to, tx.amount, tx.nonce);
+        t.setSignature(tx.signature);
+        return t;
+      });
+
+      const block = new Block(blk.index, blk.timestamp, txs, blk.previousHash, blk.nonce, blk.hash);
+      blocksWithTxs.push(block);
+    }
+
+    return blocksWithTxs;
   }
 
-  public isValidChain(): Boolean {
-    for (let i = 1; i < this.chain.length; i++) {
-      const currentBlock = this.chain[i];
-      const previousBlock = this.chain[i - 1];
+  async isValidChain(): Promise<Boolean> {
+    const chain = await this.getChain();
 
-      if (currentBlock.previousHash !== previousBlock.hash) {
-        return false;
-      }
+    for (let i = 1; i < chain.length; i++) {
+      const current = chain[i];
+      const previous = chain[i - 1];
 
-      const recomputedHash = currentBlock.calculateHash();
-      if (currentBlock.hash !== recomputedHash) {
-        return false;
-      }
+      if (current.previousHash !== previous.hash) return false;
+      if (current.calculateHash() !== current.hash) return false;
     }
     return true;
   }
