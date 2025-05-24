@@ -54,4 +54,19 @@ export class Transaction {
     }
     return Wallet.verifySignature(transaction.toHash(), transaction.signature, transaction.from);
   }
+
+  /**
+   * Used to safely reconstruct a Transaction object from raw DB records
+   */
+  public static fromData(data: {
+    from: string;
+    to: string;
+    amount: number;
+    nonce: number;
+    signature: string;
+  }): Transaction {
+    const tx = new Transaction(data.from, data.to, data.amount, data.nonce);
+    tx.setSignature(data.signature);
+    return tx;
+  }
 }
