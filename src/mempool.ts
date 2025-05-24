@@ -15,11 +15,7 @@ export class Mempool {
 
   async getTransactions(): Promise<Transaction[]> {
     const txRows = await db.select().from(mempool);
-    return txRows.map((tx) => {
-      const t = new Transaction(tx.from, tx.to, tx.amount, tx.nonce);
-      t.setSignature(tx.signature);
-      return t;
-    });
+    return txRows.map((tx) => Transaction.fromData(tx));
   }
 
   async clear(): Promise<void> {

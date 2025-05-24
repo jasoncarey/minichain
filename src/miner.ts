@@ -26,29 +26,24 @@ export class Miner {
     this.rewardAddress = rewardAddress;
   }
 
-  public mineBlock(): Block {
-    const transactions = this.mempool.getTransactions();
+  public async mineBlock(): Promise<Block> {
+    const transactions = await this.mempool.getTransactions();
     const validTxs: Transaction[] = [];
     for (const tx of transactions) {
-      if (this.state.applyTransaction(tx)) {
+      if (await this.state.applyTransaction(tx)) {
         validTxs.push(tx);
       }
     }
 
     const rewardTx: Transaction = new Transaction('', this.rewardAddress, Miner.COINBASE_REWARD, 0);
     validTxs.unshift(rewardTx);
-    this.state.credit(this.rewardAddress, Miner.COINBASE_REWARD);
+    await this.state.credit(this.rewardAddress, Miner.COINBASE_REWARD);
 
-    const newBlock = new Block(
-      this.blockchain.getLatestBlock().index + 1,
-      Date.now(),
-      validTxs,
-      this.blockchain.getLatestBlock().hash,
-    );
+    const latestBlock = await this.blockchain.getLatestBlock();
+    const newBlock = new Block(latestBlock.index + 1, Date.now(), validTxs, latestBlock.hash);
+    await this.blockchain.addBlock(newBlock);
 
-    this.blockchain.addBlock(newBlock);
-
-    this.mempool.clear();
+    await this.mempool.clear();
 
     return newBlock;
   }

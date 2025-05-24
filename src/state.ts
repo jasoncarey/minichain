@@ -9,7 +9,7 @@ export class State {
       where: eq(state.address, address),
     });
 
-    return row ? row.balance : 0;
+    return row ? row.nonce : 0;
   }
 
   async getBalance(address: string): Promise<number> {
@@ -21,12 +21,13 @@ export class State {
   }
 
   async credit(address: string, amount: number): Promise<void> {
-    const current = await this.getBalance(address);
-    const exists = await db.query.state.findFirst({
+    const row = await db.query.state.findFirst({
       where: eq(state.address, address),
     });
 
-    if (exists) {
+    const current = row?.balance ?? 0;
+
+    if (row) {
       await db
         .update(state)
         .set({ balance: current + amount })
@@ -59,7 +60,7 @@ export class State {
 
     await this.credit(tx.from, -tx.amount);
     await this.credit(tx.to, tx.amount);
-    this.incrementNonce(tx.from);
+    await this.incrementNonce(tx.from);
     return true;
   }
 }

@@ -16,6 +16,9 @@ export class Blockchain {
     this.ensureGenesisBlock();
   }
 
+  /**
+   * If the blockchain is empty, add a genesis block.
+   */
   private async ensureGenesisBlock() {
     const existing = await db.select({ count: blocks.id }).from(blocks);
     if (existing.length === 0) {
@@ -41,11 +44,7 @@ export class Blockchain {
     for (const blk of blockRows) {
       const txRows = await db.select().from(transactions).where(eq(transactions.blockId, blk.id));
 
-      const txs = txRows.map((tx) => {
-        const t = new Transaction(tx.from, tx.to, tx.amount, tx.nonce);
-        t.setSignature(tx.signature);
-        return t;
-      });
+      const txs = txRows.map((tx) => Transaction.fromData(tx));
 
       const block = new Block(blk.index, blk.timestamp, txs, blk.previousHash, blk.nonce, blk.hash);
       blocksWithTxs.push(block);
@@ -65,5 +64,10 @@ export class Blockchain {
       if (current.calculateHash() !== current.hash) return false;
     }
     return true;
+  }
+
+  async getLatestBlock(): Promise<Block> {
+    const chain = await this.getChain();
+    return chain[chain.length - 1];
   }
 }
