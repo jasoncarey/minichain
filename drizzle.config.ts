@@ -1,5 +1,6 @@
 import { config } from 'dotenv';
 import { defineConfig } from 'drizzle-kit';
+import { DB_PATH } from './src/node/config';
 
 config({ path: '.env.local' });
 
@@ -8,6 +9,6 @@ export default defineConfig({
   out: './drizzle/migrations',
   dialect: 'sqlite',
   dbCredentials: {
-    url: './data/minichain.sqlite',
+    url: DB_PATH,
   },
 });
