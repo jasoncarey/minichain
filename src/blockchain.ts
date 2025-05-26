@@ -4,6 +4,9 @@ import { Block } from './block';
 import { eq } from 'drizzle-orm';
 import { Transaction } from './transaction';
 
+export const GENESIS_TIMESTAMP = new Date('2000-01-01T00:00:00.000Z').getTime();
+export const GENESIS_HASH = '0c0ffee0c0ffee0c0ffee0c0ffee0c0ffee0c0ffee0c0ffee0c0ffee0c0ffee0';
+
 /**
  * Responsible for:
  * - Storing the blockchain
@@ -22,7 +25,7 @@ export class Blockchain {
   private async ensureGenesisBlock() {
     const existing = await db.select({ count: blocks.id }).from(blocks);
     if (existing.length === 0) {
-      this.addBlock(new Block(0, Date.now(), [], ''));
+      this.addBlock(new Block(0, GENESIS_TIMESTAMP, [], '', 0, GENESIS_HASH));
     }
   }
 
@@ -69,5 +72,14 @@ export class Blockchain {
   async getLatestBlock(): Promise<Block> {
     const chain = await this.getChain();
     return chain[chain.length - 1];
+  }
+
+  async replaceChain(newChain: Block[]) {
+    await db.delete(blocks);
+    await db.delete(transactions);
+
+    for (const block of newChain) {
+      await this.addBlock(block);
+    }
   }
 }
