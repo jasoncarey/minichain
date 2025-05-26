@@ -1,3 +1,4 @@
+import { Transaction } from './transaction';
 import { calculateHash } from './utils';
 
 /**
@@ -41,5 +42,17 @@ export class Block {
       this.nonce++;
       this.hash = this.calculateHash();
     }
+  }
+
+  public static fromData(data: any): Block {
+    const transactions = data.transactions.map(Transaction.fromData);
+    return new Block(
+      data.index,
+      data.timestamp,
+      transactions,
+      data.previousHash,
+      data.nonce,
+      data.hash,
+    );
   }
 }

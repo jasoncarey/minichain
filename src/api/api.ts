@@ -14,6 +14,7 @@ import { migrate } from 'drizzle-orm/better-sqlite3/migrator';
 import * as schema from '../db/schema';
 import { syncChain } from '../node/sync';
 import { Node } from '../node/node';
+import { Block } from '../block';
 
 config({ path: '.env.local' });
 
@@ -31,7 +32,7 @@ let blockchain: Blockchain;
 let state: State;
 let mempool: Mempool;
 
-(async () => {
+async function main() {
   node = new Node();
   await node.start();
 
@@ -73,6 +74,17 @@ let mempool: Mempool;
     res.json({ message: 'Transaction added to mempool', tx });
   });
 
+  app.post('/receive-block', async (req, res) => {
+    const block = req.body;
+    try {
+      await blockchain.addBlock(Block.fromData(block));
+      res.status(200).json({ message: 'Block received and added' });
+    } catch (err) {
+      console.error('❌ Error processing received block:', err);
+      res.status(400).json({ error: 'Failed to process block' });
+    }
+  });
+
   app.listen(HTTP_PORT, '0.0.0.0', async () => {
     console.log(`🧠 Node API running on http://localhost:${HTTP_PORT}`);
 
@@ -80,8 +92,34 @@ let mempool: Mempool;
       console.log('🔄 Starting initial sync...');
       await syncChain(blockchain);
       console.log('✅ Initial sync complete');
+
+      // Broadcast newly mined blocks to peers
+      setInterval(async () => {
+        const latestBlock = await blockchain.getLatestBlock();
+        const peers = process.env.PEERS?.split(',') || [];
+
+        for (const peer of peers) {
+          try {
+            await fetch(`${peer}/receive-block`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(latestBlock),
+            });
+          } catch (err) {
+            if (err instanceof Error) {
+              console.warn(`⚠️ Failed to broadcast to ${peer}:`, err.message);
+            } else {
+              console.warn(`⚠️ Failed to broadcast to ${peer}:`, err);
+            }
+          }
+        }
+      }, 10_000); // every 10 seconds
     } catch (err) {
       console.error('❌ Initial sync failed:', err);
     }
   });
-})();
+}
+
+main().catch((err) => {
+  console.error('❌ Failed to start node:', err);
+});
