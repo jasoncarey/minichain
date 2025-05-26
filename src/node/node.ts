@@ -19,5 +19,7 @@ export class Node {
   async start() {
     // TODO: load peers, start API server
     console.log(`🟢 Node ${this.id} started`);
+    const peers = process.env.PEERS?.split(',') || [];
+    console.log(`🔄 Peers: ${peers}`);
   }
 }
