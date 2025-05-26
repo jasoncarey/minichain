@@ -2,6 +2,7 @@ import { db } from './sqlite-client';
 import { blocks, transactions, mempool, state } from './schema';
 import { Transaction } from '../transaction';
 import { Block } from '../block';
+import { GENESIS_TIMESTAMP, GENESIS_HASH } from '../blockchain';
 
 async function main() {
   // Clear existing data
@@ -29,7 +30,7 @@ async function main() {
   });
 
   // Insert genesis block
-  const block = new Block(0, Date.now(), [], '', 0, 'genesis-hash');
+  const block = new Block(0, GENESIS_TIMESTAMP, [], '', 0, GENESIS_HASH);
   await db.insert(blocks).values({
     index: block.index,
     timestamp: block.timestamp,
