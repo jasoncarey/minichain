@@ -71,6 +71,9 @@ async function main() {
     tx.sign(senderWallet);
 
     await mempool.add(tx);
+
+    await node.broadcastTransaction(tx);
+
     res.json({ message: 'Transaction added to mempool', tx });
   });
 
@@ -82,6 +85,17 @@ async function main() {
     } catch (err) {
       console.error('❌ Error processing received block:', err);
       res.status(400).json({ error: 'Failed to process block' });
+    }
+  });
+
+  app.post('/receive-tx', async (req, res) => {
+    try {
+      const tx = Transaction.fromData(req.body);
+      await mempool.add(tx);
+      res.status(200).json({ message: 'Transaction received and added' });
+    } catch (err) {
+      console.error('❌ Error processing received transaction:', err);
+      res.status(400).json({ error: 'Failed to process transaction' });
     }
   });
 
