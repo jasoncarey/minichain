@@ -1,7 +1,7 @@
 import { db } from './db/sqlite-client';
 import { blocks, transactions } from './db/schema';
 import { Block } from './block';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { Transaction } from './transaction';
 
 export const GENESIS_TIMESTAMP = new Date('2000-01-01T00:00:00.000Z').getTime();
@@ -23,8 +23,8 @@ export class Blockchain {
    * If the blockchain is empty, add a genesis block.
    */
   private async ensureGenesisBlock() {
-    const existing = await db.select({ count: blocks.id }).from(blocks);
-    if (existing.length === 0) {
+    const [{ count }] = await db.select({ count: sql<number>`COUNT(*)` }).from(blocks);
+    if (count === 0) {
       this.addBlock(new Block(0, GENESIS_TIMESTAMP, [], '', 0, GENESIS_HASH));
     }
   }
