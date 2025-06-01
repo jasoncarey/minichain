@@ -2,10 +2,10 @@ import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 
 export const blocks = sqliteTable('blocks', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  index: integer('index').notNull(),
+  index: integer('index').notNull().unique(),
   timestamp: integer('timestamp').notNull(),
   previousHash: text('previous_hash').notNull(),
-  hash: text('hash').notNull(),
+  hash: text('hash').notNull().unique(),
   nonce: integer('nonce').notNull(),
 });
 
