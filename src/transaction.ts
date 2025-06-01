@@ -34,6 +34,13 @@ export class Transaction {
   public sign(privateWallet: Wallet): void {
     this.signature = privateWallet.sign(this.toHash());
   }
+
+  public signCoinbase(): void {
+    if (this.from === 'COINBASE') {
+      this.signature = 'COINBASE_SIGNATURE';
+    }
+  }
+
   public toHash(): string {
     const data = JSON.stringify({
       from: this.from,
@@ -48,11 +55,17 @@ export class Transaction {
     this.signature = signature;
   }
 
-  public static verify(transaction: Transaction): boolean {
-    if (transaction.amount <= 0 || transaction.nonce < 0) {
+  public static verify(tx: Transaction): boolean {
+    if (tx.from === 'COINBASE') {
+      return tx.getSignature() === 'COINBASE_SIGNATURE';
+    }
+    console.log('Verifying transaction...');
+    if (tx.amount <= 0 || tx.nonce < 0) {
+      console.log('Invalid transaction...');
       return false;
     }
-    return Wallet.verifySignature(transaction.toHash(), transaction.signature, transaction.from);
+    console.log('Verifying signature...');
+    return Wallet.verifySignature(tx.toHash(), tx.signature, tx.from);
   }
 
   /**
@@ -67,6 +80,16 @@ export class Transaction {
   }): Transaction {
     const tx = new Transaction(data.from, data.to, data.amount, data.nonce);
     tx.setSignature(data.signature);
+    return tx;
+  }
+
+  /**
+   * Creates a coinbase transaction
+   */
+  public static createCoinbase(rewardAddress: string, amount: number): Transaction {
+    console.log('Creating coinbase transaction...');
+    const tx = new Transaction('COINBASE', rewardAddress, amount, 0);
+    tx.setSignature('COINBASE');
     return tx;
   }
 }

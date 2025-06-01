@@ -50,6 +50,13 @@ export class State {
   }
 
   async applyTransaction(tx: Transaction): Promise<boolean> {
+    // Coinbase transaction verification
+    if (tx.from === 'COINBASE') {
+      await this.credit(tx.to, tx.amount);
+      return true;
+    }
+
+    // Normal transaction verification
     if (!Transaction.verify(tx)) return false;
 
     const nonce = await this.getNonce(tx.from);

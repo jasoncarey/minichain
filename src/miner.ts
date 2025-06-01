@@ -29,14 +29,18 @@ export class Miner {
   public async mineBlock(): Promise<Block> {
     const transactions = await this.mempool.getTransactions();
     const validTxs: Transaction[] = [];
+
     for (const tx of transactions) {
-      if (await this.state.applyTransaction(tx)) {
-        validTxs.push(tx);
+      try {
+        if (await this.state.applyTransaction(tx)) {
+          validTxs.push(tx);
+        }
+      } catch (error) {
+        console.error('Error applying transaction:', error);
       }
     }
 
-    const rewardTx: Transaction = new Transaction('', this.rewardAddress, Miner.COINBASE_REWARD, 0);
-    validTxs.unshift(rewardTx);
+    validTxs.unshift(this.createCoinbaseTransaction());
     await this.state.credit(this.rewardAddress, Miner.COINBASE_REWARD);
 
     const latestBlock = await this.blockchain.getLatestBlock();
@@ -46,5 +50,12 @@ export class Miner {
     await this.mempool.clear();
 
     return newBlock;
+  }
+
+  private createCoinbaseTransaction(): Transaction {
+    const tx = new Transaction('COINBASE', this.rewardAddress, Miner.COINBASE_REWARD, 0);
+
+    tx.signCoinbase();
+    return tx;
   }
 }
