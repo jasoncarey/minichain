@@ -21,6 +21,7 @@ export class Node {
   }
 
   async start() {
+    await this.blockchain.init();
     console.log(`🟢 Node ${this.id} started`);
     console.log(`🔄 Peers: ${this.peers}`);
   }

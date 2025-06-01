@@ -15,21 +15,34 @@ export const GENESIS_HASH = '0c0ffee0c0ffee0c0ffee0c0ffee0c0ffee0c0ffee0c0ffee0c
  * - Creating the genesis block
  */
 export class Blockchain {
-  constructor() {
-    this.ensureGenesisBlock();
+  constructor() {}
+
+  async init() {
+    await this.ensureGenesisBlock();
   }
 
   /**
    * If the blockchain is empty, add a genesis block.
    */
   private async ensureGenesisBlock() {
+    console.log('Ensuring genesis block...');
     const [{ count }] = await db.select({ count: sql<number>`COUNT(*)` }).from(blocks);
     if (count === 0) {
-      this.addBlock(new Block(0, GENESIS_TIMESTAMP, [], '', 0, GENESIS_HASH));
+      console.log('addBlock in ensureGenesisBlock...');
+      await this.addBlock(new Block(0, GENESIS_TIMESTAMP, [], '', 0, GENESIS_HASH));
     }
   }
 
   async addBlock(block: Block) {
+    const existing = await db.query.blocks.findFirst({
+      where: (blk, { eq }) => eq(blk.hash, block.hash),
+    });
+
+    if (existing) {
+      console.log('Block already exists, skipping...');
+      return;
+    }
+
     await db.insert(blocks).values({
       index: block.index,
       timestamp: block.timestamp,
@@ -75,11 +88,20 @@ export class Blockchain {
   }
 
   async replaceChain(newChain: Block[]) {
-    await db.delete(blocks);
-    await db.delete(transactions);
-
     for (const block of newChain) {
-      await this.addBlock(block);
+      const existing = await db.query.blocks.findFirst({
+        where: (blk, { eq }) => eq(blk.hash, block.hash),
+      });
+
+      if (!existing) {
+        await db.insert(blocks).values({
+          index: block.index,
+          timestamp: block.timestamp,
+          previousHash: block.previousHash,
+          hash: block.hash,
+          nonce: block.nonce,
+        });
+      }
     }
   }
 }
