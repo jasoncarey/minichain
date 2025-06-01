@@ -10,6 +10,7 @@ export async function syncChain(blockchain: Blockchain) {
 }
 
 async function trySyncWithPeer(peer: string, blockchain: Blockchain, retries = 3) {
+  console.log(`🔄 Syncing with ${peer}...`);
   try {
     const res = await fetch(`${peer}/chain`);
     if (!res.ok) throw new Error(`Non-200 response`);

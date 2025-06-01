@@ -39,8 +39,18 @@ async function main() {
   ({ blockchain, state, mempool } = node);
 
   app.get('/chain', async (_req, res) => {
+    console.log('Getting chain...');
     const chain = await node.blockchain.getChain();
     res.json(chain);
+  });
+
+  app.post('/create-wallet', async (req, res) => {
+    const wallet = new Wallet();
+    res.json({
+      message: 'Wallet created. DO NOT LOSE THIS PRIVATE KEY!',
+      address: wallet.getAddress(),
+      privateKey: wallet.getPrivateKey(),
+    });
   });
 
   app.get('/balance/:address', async (req, res) => {
@@ -54,11 +64,21 @@ async function main() {
   });
 
   app.post('/mine', async (req, res) => {
-    const { miner } = req.body;
-    const minerInstance = new Miner(blockchain, mempool, state, miner);
-    const block = await minerInstance.mineBlock();
+    try {
+      const { miner } = req.body;
+      if (!miner) {
+        res.status(400).json({ error: 'Miner address is required' });
+        return;
+      }
 
-    res.json({ message: 'Block mined', block });
+      const minerInstance = new Miner(blockchain, mempool, state, miner);
+      const block = await minerInstance.mineBlock();
+
+      res.json({ message: 'Block mined', block });
+    } catch (err) {
+      console.error('❌ Error mining block:', err);
+      res.status(500).json({ error: 'Failed to mine block' });
+    }
   });
 
   app.post('/tx', async (req, res) => {
@@ -80,6 +100,12 @@ async function main() {
   app.post('/receive-block', async (req, res) => {
     const block = req.body;
     try {
+      if (block.index === 0) {
+        console.log('Skipping genesis block...');
+        res.status(200).json({ message: 'Genesis block skipped' });
+        return;
+      }
+      console.log('addBlock in receive-block...');
       await blockchain.addBlock(Block.fromData(block));
       res.status(200).json({ message: 'Block received and added' });
     } catch (err) {
