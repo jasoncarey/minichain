@@ -1,11 +1,15 @@
 {
+  "name": "minichain",
+  "version": "1.0.0",
+  "description": "A blockchain application with Electron frontend and Docker-based nodes",
+  "author": "Jason Carey",
   "scripts": {
     "test": "vitest",
     "cli": "node dist/cli.js",
-    "db:dev": "tsx src/db/dev.ts",
-    "db:seed": "tsx src/db/seed.ts",
+    "db:dev": "tsx backend/src/db/dev.ts",
+    "db:seed": "tsx backend/src/db/seed.ts",
     "drizzle": "drizzle-kit",
-    "api": "tsx src/api/api.ts",
+    "api": "tsx backend/src/api/api.ts",
     "rebuild": "docker-compose down && docker-compose build && docker-compose up",
     "dev": "vite",
     "build": "tsc && vite build && electron-builder",

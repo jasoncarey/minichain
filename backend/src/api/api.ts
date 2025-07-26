@@ -126,6 +126,7 @@ async function main() {
 
   app.listen(HTTP_PORT, '0.0.0.0', async () => {
     console.log(`🧠 Node API running on http://localhost:${HTTP_PORT}`);
+    console.log(`Node API running`);
 
     try {
       console.log('🔄 Starting initial sync...');

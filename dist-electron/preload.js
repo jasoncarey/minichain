@@ -20,3 +20,11 @@ electron.contextBridge.exposeInMainWorld("ipcRenderer", {
   // You can expose other APTs you need here.
   // ...
 });
+electron.contextBridge.exposeInMainWorld("blockchain", {
+  onStatusUpdate: (callback) => {
+    electron.ipcRenderer.on("blockchain-status", (_, data) => callback(data));
+  },
+  removeStatusListener: () => {
+    electron.ipcRenderer.removeAllListeners("blockchain-status");
+  }
+});
