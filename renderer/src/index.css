@@ -1,5 +1,7 @@
 
 @import "tw-animate-css";
+@import "@fontsource/geist-mono";
+@import "@fontsource/geist";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -113,6 +115,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
     font-feature-settings: "rlig" 1, "calt" 1;
     margin: 0;
     padding: 0;
@@ -121,9 +124,10 @@
   /* Remove the problematic rule that forces all text to foreground color */
   /* Allow components to use their intended colors */
   
-  /* Preserve heading colors and ensure they use primary color */
+  /* Use Geist font for headings */
   h1, h2, h3, h4, h5, h6 {
-    color: hsl(var(--primary)) !important;
+    font-family: 'Geist', ui-sans-serif, system-ui, sans-serif;
+    color: hsl(var(--primary));
   }
 }
 
