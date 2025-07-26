@@ -28,18 +28,25 @@ export class Blockchain {
     console.log('Ensuring genesis block...');
     const [{ count }] = await db.select({ count: sql<number>`COUNT(*)` }).from(blocks);
     if (count === 0) {
-      console.log('addBlock in ensureGenesisBlock...');
       await this.addBlock(new Block(0, GENESIS_TIMESTAMP, [], '', 0, GENESIS_HASH));
     }
   }
 
   async addBlock(block: Block) {
+    const latestBlock = await this.getLatestBlock();
+    if (!this.isValidNewBlock(block, latestBlock)) {
+      console.warn('Invalid new block, skipping...');
+      return;
+    } else {
+      console.log('New block is valid, adding to chain...');
+    }
+
     const existing = await db.query.blocks.findFirst({
       where: (blk, { eq }) => eq(blk.hash, block.hash),
     });
 
     if (existing) {
-      console.log('Block already exists, skipping...');
+      // console.debug('Block already exists, skipping...');
       return;
     }
 
@@ -50,6 +57,24 @@ export class Blockchain {
       hash: block.hash,
       nonce: block.nonce,
     });
+  }
+
+  private isValidNewBlock(newBlock: Block, previousBlock: Block): boolean {
+    if (previousBlock.index + 1 !== newBlock.index) {
+      console.warn(`❌ Invalid index: expected ${previousBlock.index + 1}, got ${newBlock.index}`);
+      return false;
+    }
+    if (previousBlock.hash !== newBlock.previousHash) {
+      console.warn(
+        `❌ Invalid previousHash: expected ${previousBlock.hash}, got ${newBlock.previousHash}`,
+      );
+      return false;
+    }
+    if (newBlock.hash !== newBlock.calculateHash()) {
+      console.warn(`❌ Invalid hash: expected ${newBlock.calculateHash()}, got ${newBlock.hash}`);
+      return false;
+    }
+    return true;
   }
 
   async getChain(): Promise<Block[]> {

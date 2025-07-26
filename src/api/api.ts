@@ -101,11 +101,10 @@ async function main() {
     const block = req.body;
     try {
       if (block.index === 0) {
-        console.log('Skipping genesis block...');
+        // console.debug('Skipping genesis block...');
         res.status(200).json({ message: 'Genesis block skipped' });
         return;
       }
-      console.log('addBlock in receive-block...');
       await blockchain.addBlock(Block.fromData(block));
       res.status(200).json({ message: 'Block received and added' });
     } catch (err) {
@@ -134,26 +133,26 @@ async function main() {
       console.log('✅ Initial sync complete');
 
       // Broadcast newly mined blocks to peers
-      setInterval(async () => {
-        const latestBlock = await blockchain.getLatestBlock();
-        const peers = process.env.PEERS?.split(',') || [];
+      // setInterval(async () => {
+      //   const latestBlock = await blockchain.getLatestBlock();
+      //   const peers = process.env.PEERS?.split(',') || [];
 
-        for (const peer of peers) {
-          try {
-            await fetch(`${peer}/receive-block`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(latestBlock),
-            });
-          } catch (err) {
-            if (err instanceof Error) {
-              console.warn(`⚠️ Failed to broadcast to ${peer}:`, err.message);
-            } else {
-              console.warn(`⚠️ Failed to broadcast to ${peer}:`, err);
-            }
-          }
-        }
-      }, 10_000); // every 10 seconds
+      //   for (const peer of peers) {
+      //     try {
+      //       await fetch(`${peer}/receive-block`, {
+      //         method: 'POST',
+      //         headers: { 'Content-Type': 'application/json' },
+      //         body: JSON.stringify(latestBlock),
+      //       });
+      //     } catch (err) {
+      //       if (err instanceof Error) {
+      //         console.warn(`⚠️ Failed to broadcast to ${peer}:`, err.message);
+      //       } else {
+      //         console.warn(`⚠️ Failed to broadcast to ${peer}:`, err);
+      //       }
+      //     }
+      //   }
+      // }, 10_000); // every 10 seconds
     } catch (err) {
       console.error('❌ Initial sync failed:', err);
     }

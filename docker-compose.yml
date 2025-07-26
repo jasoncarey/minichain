@@ -6,6 +6,7 @@ services:
     environment:
       - NODE_ID=node-1
       - HTTP_PORT=3000
+      - LOG_LEVEL=info
       - PEERS=http://node2:3000,http://node3:3000
     volumes:
       - ./data:/app/data
@@ -17,6 +18,7 @@ services:
     environment:
       - NODE_ID=node-2
       - HTTP_PORT=3000
+      - LOG_LEVEL=info
       - PEERS=http://node1:3000,http://node3:3000
     volumes:
       - ./data:/app/data
@@ -28,6 +30,7 @@ services:
     environment:
       - NODE_ID=node-3
       - HTTP_PORT=3000
+      - LOG_LEVEL=info
       - PEERS=http://node1:3000,http://node2:3000
     volumes:
       - ./data:/app/data

@@ -7,7 +7,7 @@
     "db:seed": "tsx src/db/seed.ts",
     "drizzle": "drizzle-kit",
     "api": "tsx src/api/api.ts",
-    "rebuild": "docker-compose down && docker-compose build && docker-compose up -d"
+    "rebuild": "docker-compose down && docker-compose build && docker-compose up"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
