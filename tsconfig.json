@@ -32,8 +32,14 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    /* Path aliases */
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./renderer/src/*"]
+    }
   },
-  "include": ["src", "electron"],
+  "include": ["src", "electron", "renderer"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

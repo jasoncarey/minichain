@@ -1,138 +1,79 @@
-import React, { useState, useEffect } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from './assets/electron-vite.animate.svg';
+import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import './App.css';
 import './blockchain.d.ts';
 
-interface BlockchainStatus {
-  status: 'starting' | 'ready' | 'error' | 'stopping' | 'stopped' | 'idle';
-  message: string;
-}
+// Import page components
+import HomePage from './pages/HomePage';
+import BlockchainPage from './pages/BlockchainPage.tsx';
+import MempoolPage from './pages/MempoolPage';
+import WalletPage from './pages/WalletPage';
+import TransactionsPage from './pages/TransactionsPage';
+import SettingsPage from './pages/SettingsPage';
 
-function BlockchainStatusIndicator() {
-  const [status, setStatus] = useState<BlockchainStatus>({
-    status: 'idle',
-    message: 'Initializing...',
-  });
+function Navigation() {
+  const location = useLocation();
 
-  useEffect(() => {
-    console.log('🎯 Setting up blockchain status listener...');
-    if (window.blockchain) {
-      console.log('✅ window.blockchain is available');
-      window.blockchain.onStatusUpdate((newStatus) => {
-        console.log('📨 Received blockchain status update:', newStatus);
-        setStatus(newStatus as BlockchainStatus);
-      });
-
-      return () => {
-        console.log('🧹 Cleaning up blockchain status listener');
-        window.blockchain.removeStatusListener();
-      };
-    } else {
-      console.log('❌ window.blockchain is not available');
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return location.pathname === '/';
     }
-  }, []);
-
-  const getStatusColor = () => {
-    switch (status.status) {
-      case 'ready':
-        return '#22c55e'; // green
-      case 'starting':
-        return '#f59e0b'; // amber
-      case 'error':
-        return '#ef4444'; // red
-      case 'stopping':
-        return '#f59e0b'; // amber
-      case 'stopped':
-        return '#6b7280'; // gray
-      default:
-        return '#9ca3af'; // gray
-    }
-  };
-
-  const getStatusEmoji = () => {
-    switch (status.status) {
-      case 'ready':
-        return '✅';
-      case 'starting':
-        return '🔄';
-      case 'error':
-        return '❌';
-      case 'stopping':
-        return '⏹️';
-      case 'stopped':
-        return '⏸️';
-      default:
-        return '⚪';
-    }
+    return location.pathname.startsWith(path);
   };
 
   return (
-    <div
-      style={{
-        padding: '12px 16px',
-        margin: '16px 0',
-        border: '1px solid #374151',
-        borderRadius: '8px',
-        backgroundColor: '#1f2937',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-      }}
-    >
-      <span style={{ fontSize: '16px' }}>{getStatusEmoji()}</span>
-      <div>
-        <div
-          style={{
-            fontWeight: 'bold',
-            color: getStatusColor(),
-            fontSize: '14px',
-            textTransform: 'uppercase',
-          }}
-        >
-          Blockchain Nodes: {status.status}
-        </div>
-        <div
-          style={{
-            fontSize: '12px',
-            color: '#9ca3af',
-            marginTop: '2px',
-          }}
-        >
-          {status.message}
-        </div>
+    <nav className="nav-header bg-card border-b border-border">
+      <div className="nav-brand">
+        <h1 className="text-primary">Minichain</h1>
       </div>
-    </div>
+      <div className="nav-links">
+        <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
+          Home
+        </Link>
+        <Link to="/blockchain" className={`nav-link ${isActive('/blockchain') ? 'active' : ''}`}>
+          Blockchain
+        </Link>
+        <Link to="/wallet" className={`nav-link ${isActive('/wallet') ? 'active' : ''}`}>
+          Wallet
+        </Link>
+        <Link
+          to="/transactions"
+          className={`nav-link ${isActive('/transactions') ? 'active' : ''}`}
+        >
+          Transactions
+        </Link>
+        <Link to="/mempool" className={`nav-link ${isActive('/mempool') ? 'active' : ''}`}>
+          Mempool
+        </Link>
+        <Link to="/settings" className={`nav-link ${isActive('/settings') ? 'active' : ''}`}>
+          Settings
+        </Link>
+      </div>
+    </nav>
   );
 }
 
 function App() {
-  const [count, setCount] = useState(0);
+  useEffect(() => {
+    // Enable dark mode by adding the dark class to the document element
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
+  }, []);
 
   return (
-    <>
-      <div>
-        <a href="https://electron-vite.github.io" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <Router>
+      <div className="min-h-screen bg-background text-foreground">
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/blockchain" element={<BlockchainPage />} />
+          <Route path="/mempool" element={<MempoolPage />} />
+          <Route path="/wallet" element={<WalletPage />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+        </Routes>
       </div>
-      <h1>Minichain Blockchain</h1>
-
-      <BlockchainStatusIndicator />
-
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>count is {count}</button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Your blockchain nodes are running on ports 3001, 3002, and 3003
-      </p>
-    </>
+    </Router>
   );
 }
 
